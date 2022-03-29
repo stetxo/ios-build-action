@@ -5,52 +5,6 @@ platform :ios do
   lane :export_ipa do
     decode_file
 
-    keychain_password = SecureRandom.uuid
-
-    create_keychain(
-      name: 'ios-build.keychain',
-      password: keychain_password,
-      default_keychain: true,
-      unlock: true,
-      timeout: 3600
-    )
-
-    if @is_split_cer
-      import_certificate(
-        certificate_path:
-          if !ENV['P12_KEY_PATH'].empty?
-            ENV['P12_KEY_PATH']
-          else
-            'ios-build-key.p12'
-          end,
-        certificate_password: ENV['CERTIFICATE_PASSWORD'],
-        keychain_name: 'ios-build.keychain',
-        keychain_password: keychain_password,
-        log_output: true
-      )
-      import_certificate(
-        certificate_path:
-          if !ENV['P12_CER_PATH'].empty?
-            ENV['P12_CER_PATH']
-          else
-            'ios-build-key.cer'
-          end,
-        certificate_password: ENV['CERTIFICATE_PASSWORD'],
-        keychain_name: 'ios-build.keychain',
-        keychain_password: keychain_password,
-        log_output: true
-      )
-    else
-      import_certificate(
-        certificate_path:
-          !ENV['P12_PATH'].empty? ? ENV['P12_PATH'] : 'ios-build.p12',
-        certificate_password: ENV['CERTIFICATE_PASSWORD'],
-        keychain_name: 'ios-build.keychain',
-        keychain_password: keychain_password,
-        log_output: true
-      )
-    end
-
     @profiles.each { |profile| install_provisioning_profile(path: profile) }
 
     update_targets = nil
